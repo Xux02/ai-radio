@@ -18,7 +18,7 @@ export default function ChatPanel({ messages, onPlaySong, onAiAvatarClick }: Cha
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-3 w-full">
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center pt-20">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-berry-200 to-berry-400 flex items-center justify-center text-white text-3xl mb-4">
@@ -48,9 +48,9 @@ export default function ChatPanel({ messages, onPlaySong, onAiAvatarClick }: Cha
               </div>
             )}
 
-            <div>
+            <div className="min-w-0">
               <div
-                className={`px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                className={`px-3 py-2 rounded-2xl text-sm leading-relaxed break-words ${
                   msg.role === "user"
                     ? "bg-berry-50 text-gray-700 rounded-tr-sm"
                     : "bg-gray-100 text-gray-700 rounded-tl-sm"

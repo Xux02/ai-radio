@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chat } from "@/lib/deepseek";
 import { addMessage, getTasteTags } from "@/lib/db";
-import type { ChatRequest } from "@/lib/types";
+import { findSong } from "@/lib/netease";
+import type { ChatRequest, Song } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +44,24 @@ export async function POST(request: NextRequest) {
       tasteTags,
       weather: weatherContext,
     });
+
+    // Enrich songs with NetEase audio URLs
+    if (response.songs?.length > 0) {
+      const enrichedSongs: Song[] = await Promise.all(
+        response.songs.map(async (song) => {
+          const result = await findSong(song.title, song.artist);
+          if (result) {
+            return {
+              ...song,
+              neteaseId: result.id,
+              audioUrl: result.url,
+            };
+          }
+          return song;
+        })
+      );
+      response.songs = enrichedSongs;
+    }
 
     // Save assistant message
     addMessage("assistant", response.reply, response.songs);

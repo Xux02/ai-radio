@@ -1,5 +1,7 @@
 import type { Song } from "./types";
 
+const API_BASE = "https://api.tigerroot.com/music/wy";
+
 interface PlaylistDetail {
   name: string;
   songs: Song[];
@@ -57,4 +59,57 @@ function extractPlaylistId(url: string): string | null {
 
 export function validatePlaylistUrl(url: string): boolean {
   return extractPlaylistId(url) !== null;
+}
+
+// --- Song search & audio URL ---
+
+async function searchSong(keyword: string): Promise<{ id: number; name: string; artists: string } | null> {
+  try {
+    const q = encodeURIComponent(keyword);
+    const res = await fetch(`${API_BASE}/search?keywords=${q}&limit=5`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const songs = data.result?.songs;
+    if (!songs?.length) return null;
+    const song = songs[0];
+    return {
+      id: song.id,
+      name: song.name,
+      artists: (song.ar || []).map((a: any) => a.name).join("/") || "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function getSongUrl(id: number): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/song/url/v1?id=${id}&level=standard`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.url || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function findSong(title: string, artist: string): Promise<{ id: number; name: string; artists: string; url: string | null } | null> {
+  let result = await searchSong(`${title} ${artist}`);
+  if (!result) {
+    result = await searchSong(title);
+  }
+  if (!result) return null;
+
+  const url = await getSongUrl(result.id);
+
+  return {
+    id: result.id,
+    name: result.name,
+    artists: result.artists,
+    url,
+  };
 }

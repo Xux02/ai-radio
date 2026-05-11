@@ -110,8 +110,13 @@ export default function Home() {
     setMessages((prev) => [...prev, msg]);
   }, []);
 
+  // Build song list from all messages
+  const allSongs = messages
+    .flatMap((m) => m.songs || [])
+    .filter((s) => s.audioUrl);
+
   return (
-    <div className="h-screen flex flex-col bg-white max-w-lg mx-auto shadow-lg relative">
+    <div className="h-screen flex flex-col bg-white max-w-lg mx-auto shadow-lg relative overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <WeatherBadge />
@@ -122,6 +127,16 @@ export default function Home() {
       </div>
 
       <div className="border-b border-gray-50" />
+
+      {/* Playlist import */}
+      <div className="px-4 pt-2 pb-1">
+        <button
+          onClick={() => setShowPlaylistModal(true)}
+          className="text-xs text-gray-400 hover:text-berry-500 transition-colors"
+        >
+          + 导入歌单
+        </button>
+      </div>
 
       {/* Chat */}
       <ChatPanel
@@ -141,18 +156,10 @@ export default function Home() {
       )}
 
       {/* Player */}
-      <PlayerBar currentSong={currentSong} />
+      <PlayerBar currentSong={currentSong} playlist={allSongs} onSongChange={handlePlaySong} />
 
       {/* Input */}
       <InputBar onSend={handleSend} disabled={loading} />
-
-      {/* Playlist import button */}
-      <button
-        onClick={() => setShowPlaylistModal(true)}
-        className="absolute top-3 left-4 text-xs text-gray-400 hover:text-berry-500 transition-colors"
-      >
-        + 导入歌单
-      </button>
 
       {/* Modals */}
       <PlaylistModal

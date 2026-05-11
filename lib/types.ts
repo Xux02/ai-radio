@@ -3,6 +3,8 @@ export interface Song {
   artist: string;
   album?: string;
   reason?: string;
+  audioUrl?: string | null;
+  neteaseId?: number;
 }
 
 export interface Message {
